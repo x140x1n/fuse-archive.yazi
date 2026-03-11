@@ -3,53 +3,57 @@
 <!--toc:start-->
 
 - [fuse-archive.yazi (Fork)](#fuse-archiveyazi-fork)
-  - [What news with this fork](#what-news-with-this-fork)
+  - [What's new in this fork](#whats-new-in-this-fork)
     - [Keep the file mount](#keep-the-file-mount)
     - [Support multiple deep mount](#support-multiple-deep-mount)
     - [Support mountoptions](#support-mountoptions)
     - [Exclude extensions](#exclude-extensions)
     - [Support MacOS](#support-macos)
+    - [Mount management actions](#mount-management-actions)
+    - [Lazy unmount for busy mounts](#lazy-unmount-for-busy-mounts)
+    - [Automatic unmount on quit](#automatic-unmount-on-quit)
   - [Requirements](#requirements)
   - [Installation](#installation)
     - [Dependencies:](#dependencies)
     - [fuse-archive.yazi:](#fuse-archiveyazi)
     - [Setup options](#setup-options)
   - [Key mapping](#key-mapping)
+    - [Actions](#actions)
   <!--toc:end-->
 
 <!--toc:start-->
 
-[fuse-archive.yazi](https://github.com/boydaihungst/fuse-archive.yazi)
+[fuse-archive.yazi](https://github.com/x140x1n/fuse-archive.yazi)
 uses [fuse-archive](https://github.com/google/fuse-archive) to
 transparently mount and unmount archives in read-only mode, allowing you to
 navigate inside, view, and extract individual or groups of files.
 
 There is another plugin on which this one is based,
 [archivemount.yazi](https://github.com/AnirudhG07/archivemount.yazi). It
-mounts archives with read and and write permissions. The main problem is it uses
+mounts archives with read and write permissions. The main problem is it uses
 [archivemount](https://github.com/cybernoid/archivemount) which is much slower
 than [fuse-archive](https://github.com/google/fuse-archive).
 It also supports very few file types compared to this plugin, and you need to
 mount and unmount the archives manually.
 
-[fuse-archive.yazi](https://github.com/boydaihungst/fuse-archive.yazi) supports mounting the following file extensions: [SUPPORTED ARCHIVE FORMATS](https://github.com/google/fuse-archive?tab=readme-ov-file#archive-formats)
+[fuse-archive.yazi](https://github.com/x140x1n/fuse-archive.yazi) supports mounting the following file extensions: [SUPPORTED ARCHIVE FORMATS](https://github.com/google/fuse-archive?tab=readme-ov-file#archive-formats)
 
-## What news with this fork
+## What's new in this fork
 
 > [!IMPORTANT]
 > Minimum version: yazi v25.5.31.
 >
-> Password-protected RAR file is not supported yet!
+> Password-protected RAR files are not supported yet!
 
 ### Keep the file mount
 
 By using `plugin fuse-archive -- leave`. So you can copy and paste
-the content to other place without open a new tab
+the content to another place without opening a new tab.
 
 ### Support multiple deep mount
 
-That mean, if you have a file like below,
-just use the `plugin fuse-archive -- mount` to go deeper inside
+That means, if you have a file like below,
+just use `plugin fuse-archive -- mount` to go deeper inside
 and `plugin fuse-archive -- leave` to go back. Even if the files inside are password-protected,
 it will still prompt you to enter a password. You only need to enter the password once for each file.
 
@@ -72,12 +76,33 @@ Using `excluded_extensions` option, you can exclude some extensions from mountin
 
 This plugin supports MacOS, but you need to install `macfuse` instead of `fuse3`.
 
+### Mount management actions
+
+The plugin provides several actions for managing mounted archives:
+
+- **`jump`** — Show a picker of mounted archives and jump to the selected one.
+- **`select-then-unmount`** — Show a picker of mounted archives and unmount the selected one.
+- **`unmount-all`** — Unmount all currently mounted archives.
+- **`menu`** — Show an interactive menu with unmount and unmount-all options.
+
+### Lazy unmount for busy mounts
+
+When unmounting an archive that is still in use (e.g. your cwd is inside it), the plugin
+automatically redirects all tabs out of the mount point and falls back to `fusermount -uz`
+(lazy unmount) if the mount is still busy. This ensures unmounting always succeeds.
+
+### Automatic unmount on quit
+
+For yazi >= v25.12.29, the plugin automatically hooks into quit events (`key-quit`,
+`emit-quit`, `emit-ind-quit`) to unmount all archives on exit. No extra keymap
+configuration is needed.
+
 ## Requirements
 
 1. [yazi](https://github.com/sxyazi/yazi).
 
 2. This plugin only supports Linux and MacOS, and requires having latest
-   [fuse-archive](https://github.com/google/fuse-archive), [xxHash](https://github.com/Cyan4973/xxHash) and `fuse3` for linux, and [macfuse](https://github.com/macfuse/macfuse/releases) for macOS installed.
+   [fuse-archive](https://github.com/google/fuse-archive), [xxHash](https://github.com/Cyan4973/xxHash) and `fuse3` for Linux, and [macfuse](https://github.com/macfuse/macfuse/releases) for macOS installed.
    This fork requires you to build and install fuse-archive with latest
    source from github (because the latest released version in some distros is too old, 2020).
 
@@ -89,7 +114,7 @@ This plugin supports MacOS, but you need to install `macfuse` instead of `fuse3`
 
   Use `libfuse3-dev` instead of `libfuse-dev` if you are using Ubuntu 22.04 or later.
   - libfuse-dev: This is for FUSE 2.x, the older version.
-  - libfuse3-dev: This is for FUSE 3.x, the newer and actively developed version.
+  - libfuse3-dev: This is for FUSE 3.x, the newer and actively developed version,
     which is recommended by fuse-archive's author.
 
   ```sh
@@ -130,7 +155,7 @@ This plugin supports MacOS, but you need to install `macfuse` instead of `fuse3`
 ### fuse-archive.yazi:
 
 ```sh
-ya pkg add boydaihungst/fuse-archive
+ya pkg add x140x1n/fuse-archive
 ```
 
 Modify your `~/.config/yazi/init.lua` to include:
@@ -149,7 +174,7 @@ The plugin supports the following options, which can be assigned during setup:
 2. (optional) `excluded_extensions`: A list of extensions that will be excluded from mounting.
 
 3. (optional) `extra_extensions`: A list of extensions to add to the supported mount list.
-   This is useful if you want to mount an archive format that I may have missed or unawared it is supported by fuse-archive.
+   This is useful if you want to mount an archive format that I may have missed or was unaware it is supported by fuse-archive.
 
 4. (optional) `mount_options`: String of mount options to be used when mounting the archive, separated by comma or space.
    List of options: `fuse-archive -h`
@@ -174,29 +199,42 @@ to "navigate" compressed archives as if they were part of the file system.
 
 When you _enter_ an archive, the plugin mounts it and takes you to the mounted
 directory, and when you _leave_, it won't unmount the archive but takes you back to
-the original location of the archive. Normally it will unmount all mounted archive files
-when you use yazi >= 25.6.11 and use `quit` command to exit yazi. Or you can use a key mapping  
-of `-- unmount` action to unmount.
+the original location of the archive. For yazi >= v25.12.29, all mounted archives
+are automatically unmounted when you quit yazi — no extra keymap configuration required.
 
 Add this to your `~/.config/yazi/keymap.toml`:
 
 ```toml
 [mgr]
 prepend_keymap = [
-    { on   = [ "<Right>" ], run = "plugin fuse-archive -- mount", desc = "Enter or Mount selected archive" },
-    { on   = [ "<Left>" ], run = "plugin fuse-archive -- leave", desc = "Leave selected archive without unmount it" },
-    { on   = [ "l" ], run = "plugin fuse-archive -- mount", desc = "Enter or Mount selected archive" },
-    { on   = [ "h" ], run = "plugin fuse-archive -- leave", desc = "Leave selected archive without unmount it" },
-
-    # Over quit command for yazi <= v25.5.31 to unmount on quit. For (>=v25.12.29) yazi, you don't need to add these lines.
-    { on   = [ "q" ], run = ["plugin fuse-archive -- unmount", "quit"], desc = "Quit the process" },
-    { on   = [ "Q" ], run = ["plugin fuse-archive -- unmount", "quit --no-cwd-file"], desc = "Quit without outputting cwd-file" },
-
-    # Or if you use project.yazi or other plugin that call quit command internally, just keep in mind to add unmount command before quit command.
-    # Even with nightly yazi
-    { on   = [ "q" ], run = ["plugin fuse-archive -- unmount", "plugin projects -- quit"], desc = "Quit the process" },
+    { on = [ "l" ],      run = "plugin fuse-archive -- mount",               desc = "Enter or mount archive" },
+    { on = [ "h" ],      run = "plugin fuse-archive -- leave",               desc = "Leave archive (keep mounted)" },
+    { on = [ "F", "u" ], run = "plugin fuse-archive -- select-then-unmount", desc = "Select archive to unmount" },
+    { on = [ "F", "U" ], run = "plugin fuse-archive -- unmount-all",         desc = "Unmount all archives" },
+    { on = [ "g", "a" ], run = "plugin fuse-archive -- jump",                desc = "Jump to mounted archive" },
 ]
 ```
+
+### Actions
+
+| Action | Description |
+|---|---|
+| `mount` | Enter a directory or mount the selected archive and navigate into it. |
+| `leave` | Leave the current mount point back to the archive's original location (keeps it mounted). |
+| `unmount` | Unmount all mounted archives (same as `unmount-all`). |
+| `jump` | Show a picker of all mounted archives and jump to the selected one. |
+| `select-then-unmount` | Show a picker of all mounted archives and unmount the selected one. |
+| `unmount-all` | Unmount all currently mounted archives. |
+| `menu` | Show an interactive menu with unmount and unmount-all options. |
+
+> [!NOTE]
+> For yazi <= v25.5.31, you need to manually unmount before quitting:
+>
+> ```toml
+> { on = [ "q" ], run = ["plugin fuse-archive -- unmount", "quit"], desc = "Quit" },
+> ```
+>
+> For yazi >= v25.12.29, this is handled automatically via quit hooks.
 
 When the current file is not a supported archive type, the plugin simply calls
 _enter_, and when there is nothing to unmount, it calls _leave_, so it works
